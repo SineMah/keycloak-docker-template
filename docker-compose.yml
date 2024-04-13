@@ -1,0 +1,53 @@
+networks:
+    cloak:
+        driver: bridge
+
+volumes:
+    cloak_data:
+    mysql_data:
+
+services:
+    mysql:
+        image: mysql:latest
+        container_name: mysql
+        networks:
+            - cloak
+        volumes:
+            - mysql_data:/var/lib/mysql
+        environment:
+          MYSQL_ROOT_PASSWORD:
+          MYSQL_DATABASE: keycloak
+          MYSQL_USER: keycloak
+          MYSQL_PASSWORD:
+        ports:
+            - 3306:3306
+
+    keycloak:
+        image: keycloak/keycloak:24.0
+        container_name: keycloak
+        networks:
+            - cloak
+        command:
+            - start
+#            - start-dev
+        environment:
+            KEYCLOAK_ADMIN: admin
+            KEYCLOAK_ADMIN_PASSWORD: 
+            DB_VENDOR: MYSQL
+            DB_ADDR: mysql
+            DB_DATABASE: keycloak
+            DB_USER: keycloak
+            DB_PASSWORD: 
+            PROXY_ADDRESS_FORWARDING: true
+            VIRTUAL_HOST: 
+            KEYCLOAK_HTTPS_PORT: 8080
+            KC_HOSTNAME_STRICT: false
+            KC_PROXY: edge
+
+        ports:
+            - 8080:8080
+        depends_on:
+            - mysql
+        volumes:
+            - /etc/localtime:/etc/localtime:ro
+#            - ./keycloak.conf:/opt/keycloak/conf/keycloak.conf
